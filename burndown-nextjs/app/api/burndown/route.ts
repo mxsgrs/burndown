@@ -1,4 +1,3 @@
-// app/api/jira-issues/route.ts
 import { NextRequest, NextResponse } from "next/server"
 
 function getDateRange(start: string, end: string): string[] {
@@ -101,19 +100,26 @@ export async function GET(req: NextRequest) {
 
     let runningDone = 0
 
+    // Build result
     const result = sprintDays.map((date, index) => {
         runningDone += countMap[date] || 0
-        // Add any new issues created on this day
+
         data.issues.forEach((issue: any) => {
             const status = (issue.fields?.status?.name || "").toLowerCase()
             if (status === "abandonné") return
+
             const createdDate = issue.fields.created.split("T")[0]
             if (createdDate === date) runningTotal += 1
         })
-        const aimDone = parseFloat(((index / (sprintDays.length - 1)) * runningTotal).toFixed(1))
 
-        return { date, remaining: runningTotal - runningDone, remainingAim: parseFloat((runningTotal - aimDone).toFixed(1)), total: runningTotal }
+        const aimDone = parseFloat(((index / (sprintDays.length - 1)) * runningTotal).toFixed(1))
+        const remaining = runningTotal - runningDone;
+        const remainingAim = parseFloat((runningTotal - aimDone).toFixed(1));
+
+        return { date, remaining: remaining, remainingAim: remainingAim, total: runningTotal }
     })
 
-    return NextResponse.json(result)
+    const response = { sprint, data: result }
+
+    return NextResponse.json(response)
 }

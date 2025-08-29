@@ -1,14 +1,12 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { TrendingUp } from "lucide-react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
@@ -23,11 +21,28 @@ import {
 
 export const description = "An area chart with a legend"
 
+type BurndownGlobal = {
+  data: BurndownData[];
+  sprint: Sprint;
+};
+
 type BurndownData = {
   date: string;
   remaining: number;
   remainingAim: number;
   total: number;
+};
+
+type Sprint = {
+    id: number;
+    self: string;
+    state: "active" | "closed" | "future"; // adjust if needed
+    name: string;
+    startDate: string; // or Date if you parse it
+    endDate: string;   // or Date
+    createdDate: string; // or Date
+    originBoardId: number;
+    goal: string;
 };
 
 const chartConfig = {
@@ -42,19 +57,19 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function Burndown({ sprintId }: { sprintId: string }) {
+export function BurndownChart({ sprintId }: { sprintId: string }) {
 
-  const [chartData, setChartData] = useState<BurndownData[]>([])
+  const [global, setGlobal] = useState<BurndownGlobal>();
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/jira-issues?sprintId=${sprintId}`)
-        const issues: BurndownData[] = await res.json()
+        const res = await fetch(`/api/burndown?sprintId=${sprintId}`)
+        const global: BurndownGlobal = await res.json()
 
-        setChartData(issues)
+        setGlobal(global)
       } catch (err) {
         console.error("Failed to fetch burndown data", err)
       } finally {
@@ -65,21 +80,21 @@ export function Burndown({ sprintId }: { sprintId: string }) {
     fetchData()
   }, [sprintId])
 
-  if (loading) return <p>Loading burndown...</p>
+  if (loading) return null
 
   return (
     <Card className="gap-0">
       <CardHeader>
-        <CardTitle>Burndown sprint v1.4</CardTitle>
-        <CardDescription>
-          Avancement des développements dans Back Office
+        <CardTitle>{global ? `Burndown ${global.sprint.name}` : "Burndown sprint"}</CardTitle>
+        <CardDescription className="max-w-[60%]">
+          {global ? global.sprint.goal : "Avancement des développements dans Back Office"}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <AreaChart
             accessibilityLayer
-            data={chartData}
+            data={global?.data}
             margin={{
               left: 12,
               right: 12,
@@ -91,7 +106,6 @@ export function Burndown({ sprintId }: { sprintId: string }) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-            // tickFormatter={(value) => value.slice(0, 3)}
             />
             <ChartTooltip
               cursor={false}
