@@ -15,34 +15,36 @@ import {
 import {
   ChartConfig,
   ChartContainer,
+  ChartLegend,
+  ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-type Issue = {
-  key: string
-  changelog: {
-    histories: {
-      created: string
-      items: { field: string; toString?: string }[]
-    }[]
-  }
-}
+export const description = "An area chart with a legend"
 
-type DonePerDay = {
-  date: string
-  done: number
-}
+type BurndownData = {
+  date: string;
+  remaining: number;
+  remainingAim: number;
+  total: number;
+};
 
 const chartConfig = {
-  done: {
-    label: "Done",
-    color: "var(--chart-1)",
+  remaining: {
+    label: "Actuel",
+  },
+  remainingAim: {
+    label: "Objectif",
+  },
+  total: {
+    label: "Total",
   },
 } satisfies ChartConfig
 
 export function Burndown({ sprintId }: { sprintId: string }) {
-  const [chartData, setChartData] = useState<DonePerDay[]>([])
+
+  const [chartData, setChartData] = useState<BurndownData[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -50,34 +52,9 @@ export function Burndown({ sprintId }: { sprintId: string }) {
       setLoading(true)
       try {
         const res = await fetch(`/api/jira-issues?sprintId=${sprintId}`)
-        const issues: Issue[] = await res.json()
+        const issues: BurndownData[] = await res.json()
 
-        const doneDates: string[] = []
-
-        issues.forEach((issue) => {
-          issue.changelog.histories.forEach((history) => {
-            history.items.forEach((item) => {
-              if (item.field === "status" && item.toString === "Done") {
-                doneDates.push(history.created.split("T")[0]) // YYYY-MM-DD
-              }
-            })
-          })
-        })
-
-        // Count done per day
-        const countMap: Record<string, number> = {}
-        doneDates.forEach((date) => {
-          countMap[date] = (countMap[date] || 0) + 1
-        })
-
-        // Sort & format for chart
-        const sortedDays = Object.keys(countMap).sort()
-        const result = sortedDays.map((date) => ({
-          date,
-          done: countMap[date],
-        }))
-
-        setChartData(result)
+        setChartData(issues)
       } catch (err) {
         console.error("Failed to fetch burndown data", err)
       } finally {
@@ -91,11 +68,11 @@ export function Burndown({ sprintId }: { sprintId: string }) {
   if (loading) return <p>Loading burndown...</p>
 
   return (
-    <Card>
+    <Card className="gap-0">
       <CardHeader>
-        <CardTitle>Burndown Chart</CardTitle>
+        <CardTitle>Burndown sprint v1.4</CardTitle>
         <CardDescription>
-          Showing completed issues per day for Sprint {sprintId}
+          Avancement des développements dans Back Office
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -103,7 +80,10 @@ export function Burndown({ sprintId }: { sprintId: string }) {
           <AreaChart
             accessibilityLayer
             data={chartData}
-            margin={{ left: 12, right: 12, top: 12 }}
+            margin={{
+              left: 12,
+              right: 12,
+            }}
           >
             <CartesianGrid vertical={false} />
             <XAxis
@@ -111,35 +91,31 @@ export function Burndown({ sprintId }: { sprintId: string }) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
-              tickFormatter={(value) => value.slice(5)} // show MM-DD
+            // tickFormatter={(value) => value.slice(0, 3)}
             />
             <ChartTooltip
               cursor={false}
               content={<ChartTooltipContent indicator="line" />}
             />
             <Area
-              dataKey="done"
-              type="natural"
-              fill="var(--color-done)"
+              dataKey="remainingAim"
+              type="linear"
               fillOpacity={0.4}
-              stroke="var(--color-done)"
             />
+            <Area
+              dataKey="remaining"
+              type="linear"
+              fillOpacity={0.4}
+            />
+            <Area
+              dataKey="total"
+              type="linear"
+              fillOpacity={0.1}
+            />
+            <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
         </ChartContainer>
       </CardContent>
-      <CardFooter>
-        <div className="flex w-full items-start gap-2 text-sm">
-          <div className="grid gap-2">
-            <div className="flex items-center gap-2 leading-none font-medium">
-              Trending up by {chartData.reduce((a, b) => a + b.done, 0)} issues{" "}
-              <TrendingUp className="h-4 w-4" />
-            </div>
-            <div className="text-muted-foreground flex items-center gap-2 leading-none">
-              {chartData[0]?.date} – {chartData[chartData.length - 1]?.date}
-            </div>
-          </div>
-        </div>
-      </CardFooter>
     </Card>
   )
 }
