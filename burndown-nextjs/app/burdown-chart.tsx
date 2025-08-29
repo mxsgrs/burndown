@@ -20,8 +20,6 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 
-export const description = "An area chart with a legend"
-
 const chartConfig = {
   remaining: {
     label: "Actuel",
@@ -35,7 +33,6 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function BurndownChart({ sprintId }: { sprintId: string }) {
-
   const [global, setGlobal] = useState<BurndownGlobal>();
   const [loading, setLoading] = useState(true)
 
