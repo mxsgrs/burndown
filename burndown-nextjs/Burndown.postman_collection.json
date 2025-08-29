@@ -1,0 +1,59 @@
+{
+	"info": {
+		"_postman_id": "7528d3de-58ae-42d8-840d-9716992771f6",
+		"name": "Burndown",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43164791"
+	},
+	"item": [
+		{
+			"name": "Health",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Chart",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/chart?sprintId=1335",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"chart"
+					],
+					"query": [
+						{
+							"key": "sprintId",
+							"value": "1335"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

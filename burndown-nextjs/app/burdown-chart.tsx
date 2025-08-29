@@ -22,7 +22,7 @@ import {
 export const description = "An area chart with a legend"
 
 type BurndownGlobal = {
-  data: BurndownData[];
+  burndown: BurndownData[];
   sprint: Sprint;
 };
 
@@ -30,17 +30,17 @@ type BurndownData = {
   date: string;
   remaining: number;
   remainingAim: number;
-  total: number;
+  runningTotal: number;
 };
 
 type Sprint = {
     id: number;
     self: string;
-    state: "active" | "closed" | "future"; // adjust if needed
+    state: "active" | "closed" | "future";
     name: string;
-    startDate: string; // or Date if you parse it
-    endDate: string;   // or Date
-    createdDate: string; // or Date
+    startDate: string;
+    endDate: string;
+    createdDate: string;
     originBoardId: number;
     goal: string;
 };
@@ -52,7 +52,7 @@ const chartConfig = {
   remainingAim: {
     label: "Objectif",
   },
-  total: {
+  runningTotal: {
     label: "Total",
   },
 } satisfies ChartConfig
@@ -66,7 +66,7 @@ export function BurndownChart({ sprintId }: { sprintId: string }) {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/burndown?sprintId=${sprintId}`)
+        const res = await fetch(`/api/chart?sprintId=${sprintId}`)
         const global: BurndownGlobal = await res.json()
 
         setGlobal(global)
@@ -94,7 +94,7 @@ export function BurndownChart({ sprintId }: { sprintId: string }) {
         <ChartContainer config={chartConfig}>
           <AreaChart
             accessibilityLayer
-            data={global?.data}
+            data={global?.burndown}
             margin={{
               left: 12,
               right: 12,
@@ -122,7 +122,7 @@ export function BurndownChart({ sprintId }: { sprintId: string }) {
               fillOpacity={0.4}
             />
             <Area
-              dataKey="total"
+              dataKey="runningTotal"
               type="linear"
               fillOpacity={0.1}
             />
