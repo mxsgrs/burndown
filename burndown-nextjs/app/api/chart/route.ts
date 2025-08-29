@@ -1,26 +1,8 @@
-import { NextRequest, NextResponse } from "next/server"
-
-// List the dates of working days inside a given period
-function getSprintDays(start: string, end: string): string[] {
-    const dates: string[] = []
-    const current = new Date(start)
-    const last = new Date(end)
-    last.setDate(last.getDate() + 1)
-
-    while (current <= last) {
-        dates.push(current.toISOString().split("T")[0])
-        current.setDate(current.getDate() + 1)
-    }
-
-    return dates.filter((date) => {
-            const day = new Date(date).getDay()
-            return day !== 0 && day !== 6
-        });
-}
+import { NextRequest, NextResponse } from "next/server";
 
 export enum IssueStatus {
-  Abandoned = "Abandonné",
-  Done = "A démontrer"
+    Abandoned = "Abandonné",
+    Done = "A démontrer",
 }
 
 type SprintIssues = {
@@ -55,112 +37,142 @@ type Status = {
     name: string;
 }
 
-export async function GET(req: NextRequest) {
-    // Sprint identifier
-    const { searchParams } = new URL(req.url)
-    const sprintId = searchParams.get("sprintId")
+type Sprint = {
+    id: number;
+    self: string;
+    state: "active" | "closed" | "future";
+    name: string;
+    startDate: string;
+    endDate: string;
+    createdDate: string;
+    originBoardId: number;
+    goal: string;
+};
 
-    // API authentication
-    const JIRA_BASE = process.env.JIRA_BASE_URL
-    const JIRA_EMAIL = process.env.JIRA_EMAIL
-    const JIRA_API_TOKEN = process.env.JIRA_API_TOKEN
-    const token = `Basic ${Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString("base64")}`;
+// Get all working days between start and end
+function getSprintDays(sprint: Sprint): string[] {
+    const dates: string[] = [];
+    const current = new Date(sprint.startDate);
+    const last = new Date(sprint.endDate);
+    last.setDate(last.getDate() + 1);
 
-    // Fetch sprint information
-    const sprintRes = await fetch(`${JIRA_BASE}/rest/agile/1.0/sprint/${sprintId}`, {
-        headers: { Authorization: token, "Content-Type": "application/json" },
-    })
-    
-    const sprint = await sprintRes.json()
-    const sprintStart = sprint.startDate?.split("T")[0]
-    const sprintEnd = sprint.endDate?.split("T")[0]
-
-    if (!sprintStart || !sprintEnd) {
-        return NextResponse.json({ error: "Sprint dates missing" }, { status: 500 })
+    while (current <= last) {
+        dates.push(current.toISOString().split("T")[0]);
+        current.setDate(current.getDate() + 1);
     }
 
-    // Fetch issues
-    const r = await fetch(`${JIRA_BASE}/rest/agile/1.0/sprint/${sprintId}/issue?expand=changelog&maxResults=1000`, {
-        headers: {
-            Authorization: token,
-            "Content-Type": "application/json",
-        },
-    })
+    // Filter out week-end days
+    return dates.filter((date) => {
+        const day = new Date(date).getDay();
+        return day !== 0 && day !== 6;
+    });
+}
 
-    const sprintIssues: SprintIssues = await r.json()
+// Fetch sprint data from Jira
+async function fetchSprint(sprintId: string, token: string): Promise<Sprint> {
+    const baseUrl = process.env.JIRA_BASE_URL;
+    const res = await fetch(`${baseUrl}/rest/agile/1.0/sprint/${sprintId}`, {
+        headers: { Authorization: token, "Content-Type": "application/json" },
+    });
+    return res.json();
+}
 
-    // Find dates when issues were closed
-    const doneDates: string[] = []
-    sprintIssues.issues.forEach((issue: Issue) => {
+// Fetch sprint issues from Jira
+async function fetchSprintIssues(sprintId: string, token: string): Promise<SprintIssues> {
+    const baseUrl = process.env.JIRA_BASE_URL;
+    const res = await fetch(
+        `${baseUrl}/rest/agile/1.0/sprint/${sprintId}/issue?expand=changelog&maxResults=1000`,
+        { headers: { Authorization: token, "Content-Type": "application/json" } }
+    );
+    return res.json();
+}
 
-        // Filter out abandoned tickets
-        const latestStatus = issue.fields?.status?.name || ""
-        if (latestStatus === IssueStatus.Abandoned) return
+// Extract done dates from issues
+function getDoneDates(issues: Issue[]): string[] {
+    const doneDates: string[] = [];
 
-        issue.changelog?.histories?.forEach((history: History) => {
-            history.items.forEach((item: HistoryItem) => {
-                // Find the day when issue was closed
+    issues.forEach((issue) => {
+        const latestStatus = issue.fields?.status?.name || "";
+        if (latestStatus === IssueStatus.Abandoned) return;
+
+        issue.changelog?.histories?.forEach((history) => {
+            history.items.forEach((item) => {
                 if (item.field === "status" && item.toString === IssueStatus.Done) {
-                    doneDates.push(history.created.split("T")[0])
+                    doneDates.push(history.created.split("T")[0]);
                 }
-            })
-        })
-    })
+            });
+        });
+    });
 
-    // Count closed issues per day
-    const countMap: Record<string, number> = {}
-    doneDates.forEach((date) => {
-        countMap[date] = (countMap[date] || 0) + 1
-    })
+    return doneDates;
+}
 
-    // Creation per day
-    const creationMap: Record<string, number> = {}
-    sprintIssues.issues.forEach((issue: Issue) => {
-        const status = issue.fields?.status?.name || ""
-        if (status === IssueStatus.Abandoned) return
-        if (!issue.fields?.created) return
+// Count occurrences per day
+function getCountMap(dates: string[]): Record<string, number> {
+    const map: Record<string, number> = {};
+    dates.forEach((date) => (map[date] = (map[date] || 0) + 1));
+    return map;
+}
 
-        const createdDate = issue.fields.created.split("T")[0]
-        creationMap[createdDate] = (creationMap[createdDate] || 0) + 1
-    })
+// Count occurrences per day
+function getToken(): string {
+    const JIRA_EMAIL = process.env.JIRA_EMAIL!;
+    const JIRA_API_TOKEN = process.env.JIRA_API_TOKEN!;
+    return `Basic ${Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString("base64")}`;
+}
 
-    // Calculate initial total from issues created before sprint start (no type filtering)
-    let runningTotal = sprintIssues.issues.reduce((sum: number, issue: Issue) => {
-        const status = issue.fields?.status?.name || ""
-        if (status === IssueStatus.Abandoned) return sum
+// Calculate running total of issues before sprint start
+function getRunningTotal(issues: Issue[], sprintStart: string): number {
+    return issues.reduce((sum, issue) => {
+        const status = issue.fields?.status?.name || "";
+        if (status === IssueStatus.Abandoned) return sum;
 
-        const createdDate = issue.fields.created.split("T")[0]
-        return createdDate < sprintStart ? sum + 1 : sum
-    }, 0)
+        const createdDate = issue.fields.created.split("T")[0];
+        return createdDate < sprintStart ? sum + 1 : sum;
+    }, 0);
+}
 
-    const sprintDays = getSprintDays(sprintStart, sprintEnd);
-    
-    // Build result
-    let runningDone = 0
-    const burndown = sprintDays.map((date, index) => {
-        runningDone += countMap[date] || 0
+// Build burndown data
+function buildBurndown(
+    sprint: Sprint,
+    issues: Issue[],
+    countMap: Record<string, number>
+) {
+    const sprintDays = getSprintDays(sprint);
+    let runningTotal = getRunningTotal(issues, sprint.startDate);
+    let runningDone = 0;
 
-        sprintIssues.issues.forEach((issue: Issue) => {
-            const status = issue.fields?.status?.name || ""
-            if (status === IssueStatus.Abandoned) return
+    return sprintDays.map((date, index) => {
+        runningDone += countMap[date] || 0;
 
-            const createdDate = issue.fields.created.split("T")[0]
-            if (createdDate === date) runningTotal += 1
-        })
+        issues.forEach((issue) => {
+            const status = issue.fields?.status?.name || "";
+            if (status === IssueStatus.Abandoned) return;
 
-        const aimDone = parseFloat(((index / (sprintDays.length - 1)) * runningTotal).toFixed(1))
+            const createdDate = issue.fields.created.split("T")[0];
+            if (createdDate === date) runningTotal += 1;
+        });
+
+        const aimDone = parseFloat(((index / (sprintDays.length - 1)) * runningTotal).toFixed(1));
         const remaining = runningTotal - runningDone;
         const remainingAim = parseFloat((runningTotal - aimDone).toFixed(1));
 
-        return { 
-            date, 
-            remaining,
-            remainingAim,
-            runningTotal
-        }
-    })
+        return { date, remaining, remainingAim, runningTotal };
+    });
+}
 
-    const response = { sprint, burndown }
+// Endpoint
+export async function GET(req: NextRequest) {
+    const { searchParams } = new URL(req.url);
+    const sprintId = searchParams.get("sprintId");
+    if (!sprintId) return NextResponse.json({ error: "Missing sprintId" }, { status: 400 });
 
-    return NextResponse.json(response)
+    const token = getToken();
+    const sprint = await fetchSprint(sprintId, token);
+    const sprintIssues = await fetchSprintIssues(sprintId, token);
+    const doneDates = getDoneDates(sprintIssues.issues);
+    const countMap = getCountMap(doneDates);
+    const burndown = buildBurndown(sprint, sprintIssues.issues, countMap);
+
+    return NextResponse.json({ sprint, burndown });
 }
