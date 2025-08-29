@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { BurndownGlobal } from "@/types/burndown"
 
 import {
   Card,
@@ -20,30 +21,6 @@ import {
 } from "@/components/ui/chart"
 
 export const description = "An area chart with a legend"
-
-type BurndownGlobal = {
-  burndown: BurndownData[];
-  sprint: Sprint;
-};
-
-type BurndownData = {
-  date: string;
-  remaining: number;
-  remainingAim: number;
-  runningTotal: number;
-};
-
-type Sprint = {
-    id: number;
-    self: string;
-    state: "active" | "closed" | "future";
-    name: string;
-    startDate: string;
-    endDate: string;
-    createdDate: string;
-    originBoardId: number;
-    goal: string;
-};
 
 const chartConfig = {
   remaining: {

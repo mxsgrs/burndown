@@ -1,53 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-
-export enum IssueStatus {
-    Abandoned = "Abandonné",
-    Done = "A démontrer",
-}
-
-type SprintIssues = {
-    issues: Issue[];
-}
-
-type Issue = {
-    changelog: Changelog;
-    fields: Fields;
-}
-
-type Changelog = {
-    histories: History[];
-}
-
-type History = {
-    items: HistoryItem[];
-    created: string;
-}
-
-type HistoryItem = {
-    field: string;
-    toString: string;
-}
-
-type Fields = {
-    status: Status;
-    created: string;
-}
-
-type Status = {
-    name: string;
-}
-
-type Sprint = {
-    id: number;
-    self: string;
-    state: "active" | "closed" | "future";
-    name: string;
-    startDate: string;
-    endDate: string;
-    createdDate: string;
-    originBoardId: number;
-    goal: string;
-};
+import { SprintIssues, Issue, IssueStatus } from "@/types/sprint-issues";
+import { Sprint } from "@/types/sprint";
+import { BurndownGlobal, BurndownData } from "@/types/burndown"
 
 // Get all working days between start and end
 function getSprintDays(sprint: Sprint): string[] {
@@ -137,12 +91,12 @@ function buildBurndown(
     sprint: Sprint,
     issues: Issue[],
     countMap: Record<string, number>
-) {
+): BurndownGlobal {
     const sprintDays = getSprintDays(sprint);
     let runningTotal = getRunningTotal(issues, sprint.startDate);
     let runningDone = 0;
 
-    return sprintDays.map((date, index) => {
+    const burndown: BurndownData[] = sprintDays.map((date, index) => {
         runningDone += countMap[date] || 0;
 
         issues.forEach((issue) => {
@@ -159,6 +113,8 @@ function buildBurndown(
 
         return { date, remaining, remainingAim, runningTotal };
     });
+
+    return { burndown, sprint } as BurndownGlobal;
 }
 
 // Endpoint
@@ -174,5 +130,5 @@ export async function GET(req: NextRequest) {
     const countMap = getCountMap(doneDates);
     const burndown = buildBurndown(sprint, sprintIssues.issues, countMap);
 
-    return NextResponse.json({ sprint, burndown });
+    return NextResponse.json(burndown);
 }
