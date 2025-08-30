@@ -118,10 +118,11 @@ function buildBurndown(
 }
 
 // Endpoint
-export async function GET(req: NextRequest) {
-    const { searchParams } = new URL(req.url);
-    const sprintId = searchParams.get("sprintId");
-    if (!sprintId) return NextResponse.json({ error: "Missing sprintId" }, { status: 400 });
+export async function GET(
+    req: NextRequest,
+    { params }: { params: { sprintId: string } }
+) {
+    const { sprintId } = params;
 
     const token = getToken();
     const sprint = await fetchSprint(sprintId, token);

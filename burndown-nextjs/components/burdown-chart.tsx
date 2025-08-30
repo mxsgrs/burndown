@@ -40,7 +40,7 @@ export function BurndownChart({ sprintId }: { sprintId: string }) {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/chart?sprintId=${sprintId}`)
+        const res = await fetch(`/api/sprints/${sprintId}/chart`)
         const global: BurndownGlobal = await res.json()
 
         setGlobal(global)
@@ -86,19 +86,28 @@ export function BurndownChart({ sprintId }: { sprintId: string }) {
               content={<ChartTooltipContent indicator="line" />}
             />
             <Area
-              dataKey="remainingAim"
-              type="linear"
-              fillOpacity={0.4}
-            />
-            <Area
               dataKey="remaining"
               type="linear"
-              fillOpacity={0.4}
+              fill="#2892D7"
+              stroke="#2892D7"
+              strokeWidth={2}
+              fillOpacity={.8}
+            />
+            <Area
+              dataKey="remainingAim"
+              type="linear"
+              fill="#86c2ecff"
+              stroke="#b6d9f3ff"
+              strokeWidth={2}
+              fillOpacity={.2}
             />
             <Area
               dataKey="runningTotal"
               type="linear"
-              fillOpacity={0.1}
+              fill="#398dc2ff"
+              stroke="#1D70A2"
+              strokeWidth={2}
+              fillOpacity={.05}
             />
             <ChartLegend content={<ChartLegendContent />} />
           </AreaChart>
