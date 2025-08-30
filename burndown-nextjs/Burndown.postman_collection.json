@@ -43,6 +43,24 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Sprint list",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/sprints",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"sprints"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"variable": [
