@@ -90,12 +90,13 @@ function buildBurndown(
     });
 }
 
-export async function GET(req: NextRequest, props: { params: Promise<{ sprintId: number }> }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ sprintId: string }> }) {
     const params = await props.params;
     const { sprintId } = params;
+    const id = parseInt(sprintId);
 
-    const sprint = await jiraService.getSprint(sprintId);
-    const sprintIssues = await jiraService.getSprintIssues(sprintId);
+    const sprint = await jiraService.getSprint(id);
+    const sprintIssues = await jiraService.getSprintIssues(id);
     const doneDates = getDoneDates(sprintIssues.issues);
     const countMap = getCountMap(doneDates);
     const burndown = buildBurndown(sprint, sprintIssues.issues, countMap);
