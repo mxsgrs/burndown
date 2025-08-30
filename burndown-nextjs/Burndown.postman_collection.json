@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "7528d3de-58ae-42d8-840d-9716992771f6",
+		"_postman_id": "d611c51a-bf91-4a7c-b132-93345f727f2d",
 		"name": "Burndown",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "43164791"
@@ -30,19 +30,15 @@
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/api/chart?sprintId=1335",
+					"raw": "{{baseUrl}}/api/sprints/1335/chart",
 					"host": [
 						"{{baseUrl}}"
 					],
 					"path": [
 						"api",
+						"sprints",
+						"1335",
 						"chart"
-					],
-					"query": [
-						{
-							"key": "sprintId",
-							"value": "1335"
-						}
 					]
 				}
 			},
