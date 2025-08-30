@@ -1,3 +1,11 @@
+export type SprintList = {
+    maxResults: number;
+    startAt: number;
+    total: number;
+    isLast: boolean;
+    values: Sprint[];
+}
+
 export type Sprint = {
     id: number;
     self: string;
@@ -6,6 +14,7 @@ export type Sprint = {
     startDate: string;
     endDate: string;
     createdDate: string;
+    completeDate: string;
     originBoardId: number;
     goal: string;
 };

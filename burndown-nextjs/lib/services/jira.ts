@@ -1,4 +1,4 @@
-import { Sprint } from "../types/sprint"
+import { SprintList, Sprint } from "../types/sprint"
 import { SprintIssues } from "../types/sprint-issues"
 
 class JiraService {
@@ -19,6 +19,10 @@ class JiraService {
 
   async getSprint(sprintId: number): Promise<Sprint> {
     return this.request(`/rest/agile/1.0/sprint/${sprintId}`)
+  }
+
+  async getSprintList(boardId: number): Promise<SprintList> {
+    return this.request(`/rest/agile/1.0/board/${boardId}/sprint`)
   }
 
   async getSprintIssues(sprintId: number): Promise<SprintIssues> {

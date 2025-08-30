@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { BurndownData } from "@/lib/types/burndown"
 import { Sprint } from "@/lib/types/sprint"
@@ -21,6 +21,7 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import { on } from "events"
 
 const chartConfig = {
   remaining: {
@@ -34,14 +35,12 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function BurndownChart({ sprintId }: { sprintId: string }) {
+export function BurndownChart({ sprintId, onLoaded }: { sprintId: number, onLoaded: () => void }) {
   const [data, setData] = useState<BurndownData[]>();
   const [sprint, setSprint] = useState<Sprint>();
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
-      setLoading(true)
       try {
         const dataResponse = await fetch(`/api/sprints/${sprintId}/burndown`)
         const fetchedData: BurndownData[] = await dataResponse.json()
@@ -51,17 +50,14 @@ export function BurndownChart({ sprintId }: { sprintId: string }) {
         const fetchedSprint: Sprint = await sprintResponse.json()
         setSprint(fetchedSprint)
 
+        onLoaded();
       } catch (err) {
         console.error("Failed to fetch burndown data", err)
-      } finally {
-        setLoading(false)
       }
     }
 
     fetchData()
-  }, [sprintId])
-
-  if (loading) return null
+  }, [sprintId, onLoaded])
 
   return (
     <Card className="gap-0">
