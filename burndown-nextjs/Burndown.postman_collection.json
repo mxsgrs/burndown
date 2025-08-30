@@ -25,12 +25,12 @@
 			"response": []
 		},
 		{
-			"name": "Chart",
+			"name": "Burndown",
 			"request": {
 				"method": "GET",
 				"header": [],
 				"url": {
-					"raw": "{{baseUrl}}/api/sprints/1335/chart",
+					"raw": "{{baseUrl}}/api/sprints/1335/burndown",
 					"host": [
 						"{{baseUrl}}"
 					],
@@ -38,7 +38,7 @@
 						"api",
 						"sprints",
 						"1335",
-						"chart"
+						"burndown"
 					]
 				}
 			},
