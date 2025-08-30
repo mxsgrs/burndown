@@ -6,14 +6,6 @@ import { BurndownData } from "@/lib/types/burndown"
 import { Sprint } from "@/lib/types/sprint"
 
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-
-import {
   ChartConfig,
   ChartContainer,
   ChartLegend,
@@ -21,7 +13,6 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
-import { on } from "events"
 
 const chartConfig = {
   remaining: {
@@ -60,62 +51,58 @@ export function BurndownChart({ sprintId, onLoaded }: { sprintId: number, onLoad
   }, [sprintId, onLoaded])
 
   return (
-    <Card className="gap-4">
-      <CardHeader>
-        <CardTitle>{global ? `Burndown ${sprint?.name}` : "Burndown sprint"}</CardTitle>
-        <CardDescription className="max-w-[60%]">
-          {sprint?.goal}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig}>
-          <AreaChart
-            accessibilityLayer
-            data={data}
-            margin={{
-              left: 12,
-              right: 12,
-            }}
-          >
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={<ChartTooltipContent indicator="line" />}
-            />
-            <Area
-              dataKey="remaining"
-              type="linear"
-              fill="#2892D7"
-              stroke="#2892D7"
-              strokeWidth={2}
-              fillOpacity={.8}
-            />
-            <Area
-              dataKey="remainingAim"
-              type="linear"
-              fill="#86c2ecff"
-              stroke="#b6d9f3ff"
-              strokeWidth={2}
-              fillOpacity={.2}
-            />
-            <Area
-              dataKey="runningTotal"
-              type="linear"
-              fill="#398dc2ff"
-              stroke="#1D70A2"
-              strokeWidth={2}
-              fillOpacity={.05}
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </AreaChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <div className="px-3 max-w-lg">
+        <h1 className="text-2xl font-semibold leading-none tracking-tight">{`Burndown ${sprint?.name}`}</h1>
+        <p className="text-muted-foreground mt-2">{sprint?.goal}</p>
+      </div>
+      <ChartContainer config={chartConfig}>
+        <AreaChart
+          accessibilityLayer
+          data={data}
+          margin={{
+            left: 12,
+            right: 12,
+          }}
+        >
+          <CartesianGrid vertical={false} />
+          <XAxis
+            dataKey="date"
+            tickLine={false}
+            axisLine={false}
+            tickMargin={8}
+          />
+          <ChartTooltip
+            cursor={false}
+            content={<ChartTooltipContent indicator="line" />}
+          />
+          <Area
+            dataKey="remaining"
+            type="linear"
+            fill="#2892D7"
+            stroke="#2892D7"
+            strokeWidth={2}
+            fillOpacity={.8}
+          />
+          <Area
+            dataKey="remainingAim"
+            type="linear"
+            fill="#86c2ecff"
+            stroke="#b6d9f3ff"
+            strokeWidth={2}
+            fillOpacity={.2}
+          />
+          <Area
+            dataKey="runningTotal"
+            type="linear"
+            fill="#398dc2ff"
+            stroke="#1D70A2"
+            strokeWidth={2}
+            fillOpacity={.05}
+          />
+          <ChartLegend content={<ChartLegendContent />} />
+        </AreaChart>
+      </ChartContainer>
+    </div>
   )
 }

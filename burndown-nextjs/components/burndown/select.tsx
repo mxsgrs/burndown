@@ -61,7 +61,9 @@ export default function BurndownSelect() {
                 value={selectedSprintId !== null ? selectedSprintId.toString() : undefined}
                 onValueChange={(value) => setSelectedSprintId(Number(value))}
             >
-                <SelectTrigger className="w-[180px] focus-visible:ring-transparent">
+                <SelectTrigger
+                    className="w-[180px] ml-auto mr-3 focus-visible:ring-transparent focus-visible:border-[var(--input)]"
+                >
                     <SelectValue placeholder="Select a sprint" />
                 </SelectTrigger>
                 <SelectContent>
