@@ -118,10 +118,8 @@ function buildBurndown(
 }
 
 // Endpoint
-export async function GET(
-    req: NextRequest,
-    { params }: { params: { sprintId: string } }
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ sprintId: string }> }) {
+    const params = await props.params;
     const { sprintId } = params;
 
     const token = getToken();
