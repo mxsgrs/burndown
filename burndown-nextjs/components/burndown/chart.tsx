@@ -60,7 +60,7 @@ export function BurndownChart({ sprintId, onLoaded }: { sprintId: number, onLoad
   }, [sprintId, onLoaded])
 
   return (
-    <Card className="gap-0">
+    <Card className="gap-4">
       <CardHeader>
         <CardTitle>{global ? `Burndown ${sprint?.name}` : "Burndown sprint"}</CardTitle>
         <CardDescription className="max-w-[60%]">
