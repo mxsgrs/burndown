@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { SprintIssues, Issue, IssueStatus } from "@/types/sprint-issues";
-import { Sprint } from "@/types/sprint";
-import { BurndownGlobal, BurndownData } from "@/types/burndown"
+import { Issue, IssueStatus } from "@/lib/types/sprint-issues";
+import { Sprint } from "@/lib/types/sprint";
+import { BurndownData } from "@/lib/types/burndown"
+import { jiraService } from '@/lib/services/jira'
 
 // Get all working days between start and end
 function getSprintDays(sprint: Sprint): string[] {
@@ -20,25 +21,6 @@ function getSprintDays(sprint: Sprint): string[] {
         const day = new Date(date).getDay();
         return day !== 0 && day !== 6;
     });
-}
-
-// Fetch sprint data from Jira
-async function fetchSprint(sprintId: string, token: string): Promise<Sprint> {
-    const baseUrl = process.env.JIRA_BASE_URL;
-    const res = await fetch(`${baseUrl}/rest/agile/1.0/sprint/${sprintId}`, {
-        headers: { Authorization: token, "Content-Type": "application/json" },
-    });
-    return res.json();
-}
-
-// Fetch sprint issues from Jira
-async function fetchSprintIssues(sprintId: string, token: string): Promise<SprintIssues> {
-    const baseUrl = process.env.JIRA_BASE_URL;
-    const res = await fetch(
-        `${baseUrl}/rest/agile/1.0/sprint/${sprintId}/issue?expand=changelog&maxResults=1000`,
-        { headers: { Authorization: token, "Content-Type": "application/json" } }
-    );
-    return res.json();
 }
 
 // Extract done dates from issues
@@ -68,13 +50,6 @@ function getCountMap(dates: string[]): Record<string, number> {
     return map;
 }
 
-// Count occurrences per day
-function getToken(): string {
-    const JIRA_EMAIL = process.env.JIRA_EMAIL!;
-    const JIRA_API_TOKEN = process.env.JIRA_API_TOKEN!;
-    return `Basic ${Buffer.from(`${JIRA_EMAIL}:${JIRA_API_TOKEN}`).toString("base64")}`;
-}
-
 // Calculate running total of issues before sprint start
 function getRunningTotal(issues: Issue[], sprintStart: string): number {
     return issues.reduce((sum, issue) => {
@@ -91,12 +66,12 @@ function buildBurndown(
     sprint: Sprint,
     issues: Issue[],
     countMap: Record<string, number>
-): BurndownGlobal {
+): BurndownData[] {
     const sprintDays = getSprintDays(sprint);
     let runningTotal = getRunningTotal(issues, sprint.startDate);
     let runningDone = 0;
 
-    const burndown: BurndownData[] = sprintDays.map((date, index) => {
+    return sprintDays.map((date, index) => {
         runningDone += countMap[date] || 0;
 
         issues.forEach((issue) => {
@@ -113,18 +88,14 @@ function buildBurndown(
 
         return { date, remaining, remainingAim, runningTotal };
     });
-
-    return { burndown, sprint } as BurndownGlobal;
 }
 
-// Endpoint
-export async function GET(req: NextRequest, props: { params: Promise<{ sprintId: string }> }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ sprintId: number }> }) {
     const params = await props.params;
     const { sprintId } = params;
 
-    const token = getToken();
-    const sprint = await fetchSprint(sprintId, token);
-    const sprintIssues = await fetchSprintIssues(sprintId, token);
+    const sprint = await jiraService.getSprint(sprintId);
+    const sprintIssues = await jiraService.getSprintIssues(sprintId);
     const doneDates = getDoneDates(sprintIssues.issues);
     const countMap = getCountMap(doneDates);
     const burndown = buildBurndown(sprint, sprintIssues.issues, countMap);

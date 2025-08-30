@@ -1,4 +1,4 @@
-import { BurndownChart } from "@/components/burdown-chart"
+import { BurndownChart } from "@/components/charts/burdown"
 
 export default async function Page({ params }: { params: Promise<{ sprintId: string }> }) {
   const { sprintId } = await params;

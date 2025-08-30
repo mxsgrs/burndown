@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react"
 import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
-import { BurndownGlobal } from "@/types/burndown"
+import { BurndownData } from "@/lib/types/burndown"
+import { Sprint } from "@/lib/types/sprint"
 
 import {
   Card,
@@ -11,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+
 import {
   ChartConfig,
   ChartContainer,
@@ -33,17 +35,22 @@ const chartConfig = {
 } satisfies ChartConfig
 
 export function BurndownChart({ sprintId }: { sprintId: string }) {
-  const [global, setGlobal] = useState<BurndownGlobal>();
+  const [data, setData] = useState<BurndownData[]>();
+  const [sprint, setSprint] = useState<Sprint>();
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`/api/sprints/${sprintId}/chart`)
-        const global: BurndownGlobal = await res.json()
+        const dataResponse = await fetch(`/api/sprints/${sprintId}/burndown`)
+        const fetchedData: BurndownData[] = await dataResponse.json()
+        setData(fetchedData)
 
-        setGlobal(global)
+        const sprintResponse = await fetch(`/api/sprints/${sprintId}`)
+        const fetchedSprint: Sprint = await sprintResponse.json()
+        setSprint(fetchedSprint)
+
       } catch (err) {
         console.error("Failed to fetch burndown data", err)
       } finally {
@@ -59,16 +66,16 @@ export function BurndownChart({ sprintId }: { sprintId: string }) {
   return (
     <Card className="gap-0">
       <CardHeader>
-        <CardTitle>{global ? `Burndown ${global.sprint.name}` : "Burndown sprint"}</CardTitle>
+        <CardTitle>{global ? `Burndown ${sprint?.name}` : "Burndown sprint"}</CardTitle>
         <CardDescription className="max-w-[60%]">
-          {global ? global.sprint.goal : "Avancement des développements dans Back Office"}
+          {sprint?.goal}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig}>
           <AreaChart
             accessibilityLayer
-            data={global?.burndown}
+            data={data}
             margin={{
               left: 12,
               right: 12,
