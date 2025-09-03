@@ -7,8 +7,8 @@ import { jiraService } from '@/lib/services/jira'
 // Get all working days between start and end
 function getSprintDays(sprint: Sprint): string[] {
     const dates: string[] = [];
-    const current = new Date(sprint.startDate);
-    const last = new Date(sprint.endDate);
+    const current = new Date(sprint.startDate.split("T")[0]);
+    const last = new Date(sprint.endDate.split("T")[0]);
     last.setDate(last.getDate() + 1);
 
     while (current <= last) {
@@ -54,7 +54,7 @@ function getCountMap(dates: string[]): Record<string, number> {
 function getRunningTotal(issues: Issue[], sprintStart: string): number {
     return issues.reduce((sum, issue) => {
         const status = issue.fields?.status?.name || "";
-        if (status === IssueStatus.Abandoned) return sum;
+        if (status === IssueStatus.Abandoned || status == "") return sum;
 
         const createdDate = issue.fields.created.split("T")[0];
         return createdDate < sprintStart ? sum + 1 : sum;
@@ -68,7 +68,7 @@ function buildBurndown(
     countMap: Record<string, number>
 ): BurndownData[] {
     const sprintDays = getSprintDays(sprint);
-    let runningTotal = getRunningTotal(issues, sprint.startDate);
+    let runningTotal = getRunningTotal(issues, sprintDays[0]);
     let runningDone = 0;
 
     return sprintDays.map((date, index) => {
