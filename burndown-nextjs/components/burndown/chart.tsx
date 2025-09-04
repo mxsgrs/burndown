@@ -16,7 +16,7 @@ import {
 
 const chartConfig = {
   remaining: {
-    label: "Actuel",
+    label: "Restant",
   },
   remainingAim: {
     label: "Objectif",
