@@ -31,13 +31,19 @@ function getDoneDates(issues: Issue[]): string[] {
         const latestStatus = issue.fields?.status?.name || "";
         if (latestStatus === IssueStatus.Abandoned) return;
 
+        let lastDoneDate: string | null = null;
+
         issue.changelog?.histories?.forEach((history) => {
             history.items.forEach((item) => {
                 if (item.field === "status" && item.toString === IssueStatus.Done) {
-                    doneDates.push(history.created.split("T")[0]);
+                    lastDoneDate = history.created.split("T")[0];
                 }
             });
         });
+
+        if (lastDoneDate) {
+            doneDates.push(lastDoneDate);
+        }
     });
 
     return doneDates;
