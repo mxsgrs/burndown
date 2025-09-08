@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState, useRef } from "react"
-import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
+import { useEffect, useState } from "react"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { BurndownData } from "@/lib/types/burndown"
 import { Sprint } from "@/lib/types/sprint"
 
@@ -72,6 +72,7 @@ export function BurndownChart({ sprintId, onLoaded }: { sprintId: number, onLoad
             axisLine={false}
             tickMargin={8}
           />
+          <YAxis hide domain={['dataMin', 'dataMax + 2']} />
           <ChartTooltip
             cursor={false}
             content={<ChartTooltipContent indicator="line" />}
