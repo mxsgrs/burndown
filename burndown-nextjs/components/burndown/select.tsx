@@ -63,7 +63,7 @@ export default function BurndownSelect({ boardId }: { boardId: number }) {
 
     return (
         <div className="space-y-4" style={{ visibility: loading ? "hidden" : "visible" }}>
-            <h1 className="text-3xl font-semibold leading-none tracking-tight px-3 mb-9">{board?.location.displayName}</h1>
+            <h1 className="text-3xl font-semibold leading-none tracking-tight px-3 mb-9">{board?.location.projectName}</h1>
             <Select
                 value={selectedSprintId !== null ? selectedSprintId.toString() : undefined}
                 onValueChange={(value) => setSelectedSprintId(Number(value))}
