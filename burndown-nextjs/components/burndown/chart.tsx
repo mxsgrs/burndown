@@ -1,8 +1,8 @@
 "use client"
 
+import { BurndownData } from "@/lib/types/burndown"
 import { useEffect, useState } from "react"
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
-import { BurndownData } from "@/lib/types/burndown"
 import { Sprint } from "@/lib/types/sprint"
 
 import {
@@ -33,11 +33,11 @@ export function BurndownChart({ boardId, sprintId, onLoaded }: { boardId: number
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const dataResponse = await fetch(`/api/sprints/${sprintId}/burndown`)
+        const dataResponse = await fetch(`/api/boards/${boardId}/sprints/${sprintId}/burndown`)
         const fetchedData: BurndownData[] = await dataResponse.json()
         setData(fetchedData)
 
-        const sprintResponse = await fetch(`/api/sprints/${sprintId}`)
+        const sprintResponse = await fetch(`/api/boards/${boardId}/sprints/${sprintId}`)
         const fetchedSprint: Sprint = await sprintResponse.json()
         setSprint(fetchedSprint)
 
@@ -53,7 +53,7 @@ export function BurndownChart({ boardId, sprintId, onLoaded }: { boardId: number
   return (
     <div className="space-y-4">
       <div className="px-3 max-w-lg">
-        <h1 className="text-2xl font-semibold leading-none tracking-tight">{`Burndown ${sprint?.name}`}</h1>
+        <h1 className="text-2xl font-semibold leading-none tracking-tight mt-3">{`Burndown ${sprint?.name}`}</h1>
         <p className="text-muted-foreground mt-2">{sprint?.goal}</p>
       </div>
       <ChartContainer config={chartConfig}>

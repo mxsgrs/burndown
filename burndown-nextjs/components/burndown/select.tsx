@@ -3,6 +3,7 @@
 import { BurndownChart } from "@/components/burndown/chart"
 import { SprintList } from "@/lib/types/sprint"
 import { useEffect, useState } from "react"
+import { Board } from "@/lib/types/board"
 
 import {
     Select,
@@ -17,7 +18,8 @@ import {
 export default function BurndownSelect({ boardId }: { boardId: number }) {
     const [sprintList, setSprintList] = useState<SprintList>();
     const [selectedSprintId, setSelectedSprintId] = useState<number | null>(null);
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true);
+    const [board, setBoard] = useState<Board>();
 
     const handleChartLoaded = () => {
         setLoading(false);
@@ -26,6 +28,10 @@ export default function BurndownSelect({ boardId }: { boardId: number }) {
     useEffect(() => {
         const fetchData = async () => {
             try {
+                const boardResponse = await fetch(`/api/boards/${boardId}`)
+                const boardData: Board = await boardResponse.json()
+                setBoard(boardData)
+
                 const sprintListResponse = await fetch(`/api/boards/${boardId}/sprints`)
                 const sprintListData: SprintList = await sprintListResponse.json()
                 setSprintList(sprintListData)
@@ -57,6 +63,7 @@ export default function BurndownSelect({ boardId }: { boardId: number }) {
 
     return (
         <div className="space-y-4" style={{ visibility: loading ? "hidden" : "visible" }}>
+            <h1 className="text-3xl font-semibold leading-none tracking-tight px-3 mb-9">{board?.location.displayName}</h1>
             <Select
                 value={selectedSprintId !== null ? selectedSprintId.toString() : undefined}
                 onValueChange={(value) => setSelectedSprintId(Number(value))}
