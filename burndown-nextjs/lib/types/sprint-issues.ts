@@ -28,7 +28,8 @@ type Fields = {
 
 export enum IssueStatus {
     Abandoned = "Abandonné",
-    Done = "A démontrer",
+    ToDemonstrate = "A démontrer",
+    Finished = "Terminé",
 }
 
 type Status = {

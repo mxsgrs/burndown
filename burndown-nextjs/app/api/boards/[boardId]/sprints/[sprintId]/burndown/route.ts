@@ -23,8 +23,13 @@ function getSprintDays(sprint: Sprint): string[] {
     });
 }
 
+const BOARD_DONE_STATUS: Record<number, string> = {
+  12: IssueStatus.ToDemonstrate,
+  19: IssueStatus.Finished,
+};
+
 // Extract done dates from issues
-function getDoneDates(issues: Issue[]): string[] {
+function getDoneDates(issues: Issue[], boardId: number): string[] {
     const doneDates: string[] = [];
 
     issues.forEach((issue) => {
@@ -35,7 +40,7 @@ function getDoneDates(issues: Issue[]): string[] {
 
         issue.changelog?.histories?.forEach((history) => {
             history.items.forEach((item) => {
-                if (item.field === "status" && item.toString === IssueStatus.Done) {
+                if (item.field === "status" && item.toString === BOARD_DONE_STATUS[boardId]) {
                     lastDoneDate = history.created.split("T")[0];
                 }
             });
@@ -96,14 +101,15 @@ function buildBurndown(
     });
 }
 
-export async function GET(req: NextRequest, props: { params: Promise<{ sprintId: string }> }) {
+export async function GET(req: NextRequest, props: { params: Promise<{ boardId: string; sprintId: string }> }) {
     const params = await props.params;
-    const { sprintId } = params;
-    const id = parseInt(sprintId);
+    const { boardId, sprintId } = params;
+    const boardIdInt = parseInt(boardId);
+    const sprintIdInt = parseInt(sprintId);
 
-    const sprint = await jiraService.getSprint(id);
-    const sprintIssues = await jiraService.getSprintIssues(id);
-    const doneDates = getDoneDates(sprintIssues.issues);
+    const sprint = await jiraService.getSprint(sprintIdInt);
+    const sprintIssues = await jiraService.getSprintIssues(sprintIdInt);
+    const doneDates = getDoneDates(sprintIssues.issues, boardIdInt);
     const countMap = getCountMap(doneDates);
     const burndown = buildBurndown(sprint, sprintIssues.issues, countMap);
 
