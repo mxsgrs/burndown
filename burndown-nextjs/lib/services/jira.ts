@@ -17,12 +17,18 @@ class JiraService {
     return response.json()
   }
 
-  async getSprint(sprintId: number): Promise<Sprint> {
-    return this.request(`/rest/agile/1.0/sprint/${sprintId}`)
+  // Board
+  async getBoard(boardId: number): Promise<SprintList> {
+    return this.request(`/rest/agile/1.0/board/${boardId}`)
   }
 
   async getSprintList(boardId: number): Promise<SprintList> {
     return this.request(`/rest/agile/1.0/board/${boardId}/sprint`)
+  }
+
+  // Sprint
+  async getSprint(sprintId: number): Promise<Sprint> {
+    return this.request(`/rest/agile/1.0/sprint/${sprintId}`)
   }
 
   async getSprintIssues(sprintId: number): Promise<SprintIssues> {
