@@ -26,7 +26,7 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
-export function BurndownChart({ sprintId, onLoaded }: { sprintId: number, onLoaded: () => void }) {
+export function BurndownChart({ boardId, sprintId, onLoaded }: { boardId: number, sprintId: number, onLoaded: () => void }) {
   const [data, setData] = useState<BurndownData[]>();
   const [sprint, setSprint] = useState<Sprint>();
 

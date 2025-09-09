@@ -14,7 +14,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-export default function BurndownSelect() {
+export default function BurndownSelect({ boardId }: { boardId: number }) {
     const [sprintList, setSprintList] = useState<SprintList>();
     const [selectedSprintId, setSelectedSprintId] = useState<number | null>(null);
     const [loading, setLoading] = useState(true)
@@ -26,7 +26,7 @@ export default function BurndownSelect() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const sprintListResponse = await fetch(`/api/sprints`)
+                const sprintListResponse = await fetch(`/api/boards/${boardId}/sprints`)
                 const sprintListData: SprintList = await sprintListResponse.json()
                 setSprintList(sprintListData)
 
@@ -82,7 +82,7 @@ export default function BurndownSelect() {
                 </SelectContent>
             </Select>
             {selectedSprintId &&
-                <BurndownChart sprintId={selectedSprintId} onLoaded={handleChartLoaded} />
+                <BurndownChart boardId={boardId} sprintId={selectedSprintId} onLoaded={handleChartLoaded} />
             }
         </div>
     );
