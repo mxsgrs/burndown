@@ -2,7 +2,7 @@
 
 import { BurndownData } from "@/lib/types/burndown"
 import { useEffect, useState } from "react"
-import { Area, AreaChart, CartesianGrid, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ReferenceLine } from "recharts"
 import { Sprint } from "@/lib/types/sprint"
 
 import {
@@ -100,6 +100,11 @@ export function BurndownChart({ boardId, sprintId, onLoaded }: { boardId: number
             stroke="#1D70A2"
             strokeWidth={2}
             fillOpacity={.05}
+          />
+          <ReferenceLine
+            x={new Date().toISOString().split("T")[0]}
+            stroke="#2e2e2eff"
+            strokeWidth={3}
           />
           <ChartLegend content={<ChartLegendContent />} />
         </AreaChart>
