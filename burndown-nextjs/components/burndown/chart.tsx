@@ -53,7 +53,7 @@ export function BurndownChart({ boardId, sprintId, onLoaded }: { boardId: number
   return (
     <div className="space-y-4">
       <div className="px-3 max-w-lg">
-        <h1 className="text-2xl font-semibold leading-none tracking-tight mt-3">{`Burndown ${sprint?.name}`}</h1>
+        <h1 className="text-2xl text-neutral-700 font-semibold leading-none tracking-tight mt-3">{`Burndown ${sprint?.name}`}</h1>
         <p className="text-muted-foreground mt-2">{sprint?.goal}</p>
       </div>
       <ChartContainer config={chartConfig}>
@@ -103,7 +103,7 @@ export function BurndownChart({ boardId, sprintId, onLoaded }: { boardId: number
           />
           <ReferenceLine
             x={new Date().toISOString().split("T")[0]}
-            stroke="#2e2e2eff"
+            stroke="rgba(63, 63, 63, 1)"
             strokeWidth={3}
           />
           <ChartLegend content={<ChartLegendContent />} />

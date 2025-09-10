@@ -62,32 +62,34 @@ export default function BurndownSelect({ boardId }: { boardId: number }) {
     }, [])
 
     return (
-        <div className="space-y-4" style={{ visibility: loading ? "hidden" : "visible" }}>
-            <h1 className="text-3xl font-semibold leading-none tracking-tight px-3 mb-9">{board?.location.projectName}</h1>
-            <Select
-                value={selectedSprintId !== null ? selectedSprintId.toString() : undefined}
-                onValueChange={(value) => setSelectedSprintId(Number(value))}
-            >
-                <SelectTrigger
-                    className="w-[180px] ml-auto mr-3 focus-visible:ring-transparent focus-visible:border-[var(--input)]"
+        <div className="space-y-8" style={{ visibility: loading ? "hidden" : "visible" }}>
+            <div className="flex">
+                <h1 className="text-4xl text-sky-800 font-semibold leading-none tracking-tight px-3">{board?.location.projectName}</h1>
+                <Select
+                    value={selectedSprintId !== null ? selectedSprintId.toString() : undefined}
+                    onValueChange={(value) => setSelectedSprintId(Number(value))}
                 >
-                    <SelectValue placeholder="Select a sprint" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectGroup>
-                        <SelectLabel>Sprints</SelectLabel>
-                        {sprintList?.values
-                            ?.filter(sprint => sprint.state !== 'future')
-                            .slice()
-                            .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
-                            .map((sprint) => (
-                                <SelectItem key={sprint.id} value={sprint.id.toString()}>
-                                    {sprint.name}
-                                </SelectItem>
-                            ))}
-                    </SelectGroup>
-                </SelectContent>
-            </Select>
+                    <SelectTrigger
+                        className="w-[180px] ml-auto mr-3 focus-visible:ring-transparent focus-visible:border-[var(--input)]"
+                    >
+                        <SelectValue placeholder="Select a sprint" />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectGroup>
+                            <SelectLabel>Sprints</SelectLabel>
+                            {sprintList?.values
+                                ?.filter(sprint => sprint.state !== 'future')
+                                .slice()
+                                .sort((a, b) => new Date(b.createdDate).getTime() - new Date(a.createdDate).getTime())
+                                .map((sprint) => (
+                                    <SelectItem key={sprint.id} value={sprint.id.toString()}>
+                                        {sprint.name}
+                                    </SelectItem>
+                                ))}
+                        </SelectGroup>
+                    </SelectContent>
+                </Select>
+            </div>
             {selectedSprintId &&
                 <BurndownChart boardId={boardId} sprintId={selectedSprintId} onLoaded={handleChartLoaded} />
             }
