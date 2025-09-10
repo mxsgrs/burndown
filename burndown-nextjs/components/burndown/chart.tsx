@@ -70,12 +70,22 @@ export function BurndownChart({ boardId, sprintId, onLoaded }: { boardId: number
             dataKey="date"
             tickLine={false}
             axisLine={false}
-            tickMargin={8}
+            tickFormatter={(value: string, index: number) => {
+              const isExtremum = index % 2 === 0 || index + 1 === data?.length
+              if (isExtremum) return "";
+              const [year, month, day] = value.split("-");
+              return `${day}/${month}/${year}`;
+            }}
+            interval={0}
           />
           <YAxis hide domain={['dataMin', 'dataMax + 2']} />
           <ChartTooltip
             cursor={false}
             content={<ChartTooltipContent indicator="line" />}
+            labelFormatter={(label: string) => {
+              const [year, month, day] = label.split("-");
+              return `${day}/${month}/${year}`;
+            }}
           />
           <Area
             dataKey="remaining"
